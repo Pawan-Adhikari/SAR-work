@@ -1,10 +1,36 @@
+# initial setup
+import asf_search as asf
+import hyp3_sdk
+import re
 from pathlib import Path
+from zipfile import ZipFile
 import Crop_Product as cp
+import subprocess
 
-zipPath = []
-for path in Path('../SAR_products_unprocessed').glob("*.zip"):
-    zipPath.append(path.name)
+loc='../SAR_products_unprocessed/newBatch'
 
-print(zipPath)
+zipPaths = []
+for path in Path(loc).glob("*.zip"):
+    zipPaths.append(path)
 
-cp.crop("../SAR_products_unprocessed/S1A_IW_20241229T122232_DVP_RTC30_G_gpuned_7180/S1A_IW_20241229T122232_DVP_RTC30_G_gpuned_7180_VV.tif", "../Training_Dataset/TshoRolpa/tshoRolpaAOI.geojson","../Training_Dataset/TshoRolpa" )
+
+start_year = 2021
+for i in range (5):
+    year = start_year + i
+    pattern_string = r"S1A_IW_" + str(year) + r"\d+T\d+_DVP_RTC\d+_G_.*_.*\.zip"
+    pattern = re.compile(
+        pattern_string
+    )
+    print(pattern)
+    for zipPath in zipPaths:
+        zipName = zipPath.name
+        if pattern.match(zipName):
+            print(zipName)
+            tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
+
+            tifPath = Path(f'{loc}/{tifName}')
+
+            lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
+            for lakeName in lakeNames:
+                lakePath = f'../Training_Dataset/{lakeName}'
+                cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)

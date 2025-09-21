@@ -10,15 +10,18 @@ def crop(input_tif, aoi_geojson, outDir):
         cutlineDSName=aoi_geojson,
         cropToCutline=True,
         dstNodata=0,
-        multithread=True
+        multithread=True,
+        xRes=20,            
+        yRes=20
     )
 
     # Perform warp (crop) by passing the input file path as a string
     gdal.Warp(
         destNameOrDestDS=output_tif, 
-        srcDSOrSrcDSTab=input_tif, # FIX: Pass the file path as a string
+        srcDSOrSrcDSTab=input_tif, 
         options=warp_options
     )
+    
 
     print(f"Cropped raster saved to: {output_tif}")
 
