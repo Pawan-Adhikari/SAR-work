@@ -1,11 +1,26 @@
+# Imports and libraries
+import asf_search as asf
+import hyp3_sdk
+import re
 from pathlib import Path
-import padding
-import os
+from zipfile import ZipFile
+import Crop_Product as cp
+import subprocess
+import configparser
 
-lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
-loc = '../Training_Dataset/'
-for lakes in lakeNames:
-    lake_path = loc + lakes
-    #os.mkdir(lake_path+'/Padded', exists_ok = True)
-    for tif_path in Path(lake_path).glob("*.tif"):
-        padding.pad_and_save_tif(tif_path,lake_path + f'/Padded/{tif_path.name}')
+
+#Initiation:
+config = configparser.ConfigParser()
+config.read('config.ini')
+start_date=config.get('Other','start_date')
+end_date=config.get('Other','end_date')    
+usr = config.get('Login','user')
+pas = config.get('Login','password')
+wkt = config.get('Other','wkt')     
+n = config.getint('Other','number_of_products_per_month')    
+loc=config.get('Other','store_location')
+lakeNames = config.get('Other', 'lakeNames').split(', ')
+years = config.get('Other', 'years').split(', ')
+
+print(years)
+print(lakeNames)
