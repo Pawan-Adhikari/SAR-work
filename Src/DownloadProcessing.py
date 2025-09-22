@@ -7,6 +7,7 @@ from zipfile import ZipFile
 import Crop_Product as cp
 import subprocess
 import configparser
+import padding
 
 
 #Initiation:
@@ -100,8 +101,8 @@ for i in range (5):
 
             for lakeName in lakeNames:
                 lakePath = f'../Training_Dataset/{lakeName}'
-                cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-
+                crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
+                padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{tifPath.name}')
 
 
 

@@ -24,13 +24,4 @@ def crop(input_tif, aoi_geojson, outDir):
     
 
     print(f"Cropped raster saved to: {output_tif}")
-
-"""
-gdalwarp \
-  -cutline AOI_tshoRolpa.geojson \
-  -crop_to_cutline \
-  -of GTiff \
-  -overwrite \
-  S1A_IW_20241229T122232_DVP_RTC30_G_gpuned_7180/S1A_IW_20241229T122232_DVP_RTC30_G_gpuned_7180_VV.tif \
-  output_clipped.tif
-  """
+    return output_tif

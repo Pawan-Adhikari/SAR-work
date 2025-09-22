@@ -1,34 +1,11 @@
-# initial setup
-import asf_search as asf
-import hyp3_sdk
-import re
 from pathlib import Path
-from zipfile import ZipFile
-import Crop_Product as cp
-import subprocess
+import padding
+import os
 
-loc='../SAR_products_unprocessed/newBatch'
-
-zipPaths = []
-for path in Path(loc).glob("*.zip"):
-    zipPaths.append(path)
-
-
-for zipPath in zipPaths:
-    zipName = zipPath.name
-    tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
-
-    with ZipFile(zipPath, 'r') as zObj:
-        print(zObj.namelist())
-        zObj.extract(tifName, path=loc)
-    zObj.close()
-
-    tifPath = Path(f'{loc}/{tifName}')
-
-    lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
-    for lakeName in lakeNames:
-        lakePath = f'../Training_Dataset/{lakeName}'
-        cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-
-
-
+lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
+loc = '../Training_Dataset/'
+for lakes in lakeNames:
+    lake_path = loc + lakes
+    #os.mkdir(lake_path+'/Padded', exists_ok = True)
+    for tif_path in Path(lake_path).glob("*.tif"):
+        padding.pad_and_save_tif(tif_path,lake_path + f'/Padded/{tif_path.name}')
