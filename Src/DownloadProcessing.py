@@ -66,12 +66,8 @@ if check == 'Y':
     print(jobs_urls)
 
 #Check and continue with downloading
-    check = input("Do you want to continue Download? (Y/N)")
-    if (check == 'Y'): 0
-    else: quit()
-
-    for url in jobs_urls:
-        subprocess.run(["wget", "-c", url, "-P", loc])
+for url in jobs_urls:
+    subprocess.run(["wget", "-c", url, "-P", loc])
     #job.download_files(location = loc, create=True)
 
 #Preparing to unzip
