@@ -6,51 +6,36 @@ from pathlib import Path
 from zipfile import ZipFile
 import Crop_Product as cp
 import subprocess
+import configparser
+
 
 #Initiation:
-start_date='07-01'
-end_date='07-30'
-hyp3 = hyp3_sdk.HyP3(username='pon.adk', password='qeDriz-juhdu3-feckav')
-wkt = 'POLYGON ((86.7425991901464 27.935407268344107, 86.7425991901464 27.93062783962911, 86.75104832773593 27.93062783962911, 86.75104832773593 27.935407268344107, 86.7425991901464 27.935407268344107))'
-n = 0
-loc='../SAR_products_unprocessed/newBatch'
+config = configparser.ConfigParser()
+config.read('config.ini')
+start_date=config.get('Other','start_date')
+end_date=config.get('Other','end_date')    
+usr = config.get('Login','user')
+pas = config.get('Login','password')
+wkt = config.get('Other','wkt')     
+n = config.getint('Other','number_of_products_per_month')    
+loc=config.get('Other','store_location')
+lakeNames = config.get('Other', 'lakeNames').split(', ')
+years = config.get('Other', 'years').split(', ')
+job_name = config.get('Other','job_name')
+
+#hyp3 authentication
+hyp3 = hyp3_sdk.HyP3(username=usr, password=pas)
 
 #Searching:
 results = []
-results_2025 = asf.geo_search(intersectsWith=wkt,
-                         platform=[asf.PLATFORM.SENTINEL1],
-                         processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
-                         start='2025-' + start_date,
-                         end='2025-'+end_date)
-results.append(results_2025[n])
+for year in years:
+    results_thisYear = asf.geo_search(intersectsWith=wkt,
+                            platform=[asf.PLATFORM.SENTINEL1],
+                            processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
+                            start=year + '-' + start_date,
+                            end=year + '-' + end_date)
+    results.append(results_thisYear[n])
 
-results_2024 = asf.geo_search(intersectsWith=wkt,
-                         platform=[asf.PLATFORM.SENTINEL1],
-                         processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
-                         start='2024-' + start_date,
-                         end='2024-'+end_date)
-results.append(results_2024[n])
-
-results_2023 = asf.geo_search(intersectsWith=wkt,
-                         platform=[asf.PLATFORM.SENTINEL1],
-                         processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
-                         start='2023-' + start_date,
-                         end='2023-'+end_date)
-results.append(results_2023[n])
-    
-results_2022 = asf.geo_search(intersectsWith=wkt,
-                         platform=[asf.PLATFORM.SENTINEL1],
-                         processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
-                         start='2022-' + start_date,
-                         end='2022-'+end_date)
-results.append(results_2022[n])
-
-results_2021 = asf.geo_search(intersectsWith=wkt,
-                         platform=[asf.PLATFORM.SENTINEL1],
-                         processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
-                         start='2021-' + start_date,
-                         end='2021-'+end_date)
-results.append(results_2021[n])
 granule_ids = [result.properties['sceneName'] for result in results]
 
 #Display found products
@@ -63,7 +48,7 @@ for granule_id in granule_ids:
     job_definitions.append(
          hyp3.prepare_rtc_job(  
                 granule_id, 
-                name='SomeJob',
+                name=job_name,
                 speckle_filter= True,
                 resolution=20,
             )
@@ -117,7 +102,6 @@ for i in range (5):
 
             tifPath = Path(f'{loc}/{tifName}')
 
-            lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
             for lakeName in lakeNames:
                 lakePath = f'../Training_Dataset/{lakeName}'
                 cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
