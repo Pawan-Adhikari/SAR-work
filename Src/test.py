@@ -14,23 +14,21 @@ for path in Path(loc).glob("*.zip"):
     zipPaths.append(path)
 
 
-start_year = 2021
-for i in range (5):
-    year = start_year + i
-    pattern_string = r"S1A_IW_" + str(year) + r"\d+T\d+_DVP_RTC\d+_G_.*_.*\.zip"
-    pattern = re.compile(
-        pattern_string
-    )
-    print(pattern)
-    for zipPath in zipPaths:
-        zipName = zipPath.name
-        if pattern.match(zipName):
-            print(zipName)
-            tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
+for zipPath in zipPaths:
+    zipName = zipPath.name
+    tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
 
-            tifPath = Path(f'{loc}/{tifName}')
+    with ZipFile(zipPath, 'r') as zObj:
+        print(zObj.namelist())
+        zObj.extract(tifName, path=loc)
+    zObj.close()
 
-            lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
-            for lakeName in lakeNames:
-                lakePath = f'../Training_Dataset/{lakeName}'
-                cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
+    tifPath = Path(f'{loc}/{tifName}')
+
+    lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
+    for lakeName in lakeNames:
+        lakePath = f'../Training_Dataset/{lakeName}'
+        cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
+
+
+
