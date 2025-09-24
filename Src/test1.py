@@ -1,51 +1,83 @@
 import rasterio
-import os
+import numpy as np
 from pathlib import Path
 
-def check_geotiff_specifications(file_path):
-    # Supported EPSG codes from Labelbox documentation
-    supported_crs = [
-        "EPSG:3857",
-        "EPSG:3395",
-        "EPSG:4326"
-    ]
-    
+def normalize_and_save_geotiff_hist_equalization(input_path, output_path):
+    """
+    Normalizes the pixel values of a GeoTIFF band to an 8-bit range (0-255)
+    using Histogram Equalization and saves the result as a new GeoTIFF.
+
+    Args:
+        input_path (str or Path): The path to the input GeoTIFF file.
+        output_path (str or Path): The path to save the new GeoTIFF file.
+    """
     try:
-        # Check file size
-        file_size_bytes = os.path.getsize(file_path)
-        file_size_mb = file_size_bytes / (1024 * 1024)
-        print(f"✅ File Size: {file_size_mb:.2f} MB (Recommended < 1 GB)")
+        with rasterio.open(input_path) as src:
+            # Read the data from the first band
+            data = src.read(1)
 
-        with rasterio.open(file_path) as src:
-            # Check Coordinate System (CRS)
-            crs_code = src.crs.to_string()
-            print(f"✅ Coordinate System: {crs_code}")
-            if crs_code in supported_crs:
-                print("   - CRS is a supported type.")
+            # Get the original nodata value
+            nodata_val = src.nodata
+
+            # Create a mask for valid data pixels
+            if nodata_val is not None:
+                valid_mask = data != nodata_val
+                valid_pixels = data[valid_mask]
             else:
-                print("   - ⚠️ CRS is NOT a supported type. Please convert it.")
+                valid_pixels = data
 
-            # Check CRS Type (Projected CRS)
-            if src.crs.is_projected:
-                print("✅ CRS Type: Projected (Supported)")
-            else:
-                print("⚠️ CRS Type: Geographic (NOT Supported). Please convert it.")
+            # Get the minimum and maximum values from the valid data for the histogram range
+            min_val = np.min(valid_pixels)
+            max_val = np.max(valid_pixels)
 
-            # Check number of bands
-            print(f"✅ Number of Bands: {src.count}")
-            if src.count <= 4:
-                print("   - Number of bands is supported.")
-            else:
-                print("   - ⚠️ Number of bands is NOT supported. Please reduce to 4 or less.")
+            # Create a histogram of the valid pixels
+            hist, bins = np.histogram(valid_pixels, bins=256, range=(min_val, max_val))
+            
+            # Calculate the cumulative distribution function (CDF)
+            cdf = hist.cumsum()
+            
+            # Normalize the CDF to the full 0-255 range, ignoring pixels at the very beginning
+            # This avoids crushing the data if there's a big spike in the lowest values
+            cdf_normalized = (cdf - cdf.min()) * 255 / (cdf.max() - cdf.min())
 
-    except rasterio.errors.RasterioIOError as e:
-        print(f"❌ Error: Unable to open the GeoTIFF file. Check the file path and integrity. Error: {e}")
+            # Use the CDF to map the original data to the new range
+            equalized_data = np.interp(data, bins[:-1], cdf_normalized)
+
+            # Ensure nodata values are set to 0 in the new data
+            if nodata_val is not None:
+                equalized_data[~valid_mask] = 0
+            
+            # Get the original metadata
+            profile = src.profile
+
+            # Update the profile for the new 8-bit output
+            profile.update(
+                dtype=rasterio.uint8,
+                nodata=0,
+                count=1,
+            )
+
+            # Save the equalized data to the new file
+            with rasterio.open(output_path, 'w', **profile) as dst:
+                dst.write(equalized_data.astype(rasterio.uint8), 1)
+
+        print(f"✅ Successfully processed '{input_path}' using Histogram Equalization and saved to '{output_path}'.")
+
+    except rasterio.RasterioIOError as e:
+        print(f"❌ Rasterio error: Could not open or process '{input_path}'. Error: {e}")
     except Exception as e:
         print(f"❌ An unexpected error occurred: {e}")
 
-# Example usage:
-# Replace with the path to your padded GeoTIFF file
-geotiff_folder = "//Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label_reproj"
-for filename in Path(geotiff_folder).glob('*.tif'):
-    print(filename)
-    check_geotiff_specifications(filename)
+# --- Example Usage ---
+
+# Replace these paths with your actual local file paths
+input_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label')
+output_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label_converted/')
+
+# Ensure the output directory exists
+output_directory.mkdir(exist_ok=True)
+
+# Loop through all .tif files and process them
+for path in input_directory.glob("*.tif"):
+    output_path = output_directory / path.name
+    normalize_and_save_geotiff_hist_equalization(path, output_path)
