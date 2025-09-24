@@ -3,7 +3,7 @@ from uuid import uuid4
 import os
 
 client = Client(api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZ3OXB4OW4xNXR3MDd5ODhpZXhkNWRnIiwib3JnYW5pemF0aW9uSWQiOiJjbWZ3OXB4OWcxNXR2MDd5ODBieXhheTVlIiwiYXBpS2V5SWQiOiJjbWZ3Y3kyOWIxYzh0MDcwdzBxYzgwN2JxIiwic2VjcmV0IjoiZmZlY2RlYWJlMmRhNzUyYWUwZWQzYTFiMDJjOGMwZjQiLCJpYXQiOjE3NTg2MjAwMDcsImV4cCI6MTc2MTAzOTIwN30.P4DZ9WmhumQd7_EWcus0oc3It1Wp0CWel0Fjuv5dS-k")
-new_dataset_name = "SAR_images"
+new_dataset_name = "SAR_images_test"
 
 # Create the new dataset
 dataset = client.create_dataset(name=new_dataset_name)

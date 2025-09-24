@@ -27,4 +27,6 @@ for zipPath in zipPaths:
     for lakeName in lakeNames:
         lakePath = f'../Training_Dataset/{lakeName}'
         crop_out = cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-        padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{tifPath.name}')
+        print(lakePath + f'/Padded/{tifPath.name}_clipped_to_{lakeName}AOI.geojson.tif')
+        #padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{tifPath.name}_clipped_to_{lakeName}AOI.geojson.tif')
+
