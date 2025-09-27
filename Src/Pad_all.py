@@ -3,10 +3,10 @@ import padding
 import os
 
 lakeNames = ['tshoRolpa', 'imjaTsho', 'chamlangTsho', 'gokyoTsho']
-loc = '../Training_Dataset/'
+loc = '/Users/pawanadhikari/Documents/temp'
 lake = 'chamlangTsho'
-lake_path = loc + lake
+lake_path = '/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label/'
 #os.mkdir(lake_path+'/Padded', exists_ok = True)
-for tif_path in Path(lake_path).glob("*.tif"):
-    padding.pad_and_save_tif(tif_path,lake_path + f'/Padded/{tif_path.name}')
+for tif_path in Path(loc).glob("*.tif"):
+    padding.pad_and_save_tif(tif_path,lake_path + tif_path.name)
 
