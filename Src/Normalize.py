@@ -2,6 +2,7 @@ import rasterio
 import numpy as np
 from pathlib import Path
 
+
 def normalize_and_save_geotiff_hist_equalization(input_path, output_path):
     """
     Normalizes the pixel values of a GeoTIFF band to an 8-bit range (0-255)
@@ -68,16 +69,12 @@ def normalize_and_save_geotiff_hist_equalization(input_path, output_path):
     except Exception as e:
         print(f"❌ An unexpected error occurred: {e}")
 
-# --- Example Usage ---
 
-# Replace these paths with your actual local file paths
-input_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label')
-output_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label_converted/')
+def normalize(input_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/tilichoTsho/Padded/'),
+              output_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/new_to_label/')):
 
-# Ensure the output directory exists
-output_directory.mkdir(exist_ok=True)
-
-# Loop through all .tif files and process them
-for path in input_directory.glob("*.tif"):
-    output_path = output_directory / path.name
-    normalize_and_save_geotiff_hist_equalization(path, output_path)
+    output_directory.mkdir(exist_ok=True)
+    for path in input_directory.glob("*.tif"):
+        output_path = output_directory / path.name
+        normalize_and_save_geotiff_hist_equalization(path, output_path)
+    return output_directory

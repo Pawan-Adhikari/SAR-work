@@ -1,7 +1,7 @@
 import rasterio
 import numpy as np
 
-def get_min_max_values(file_path):
+def check(file_path):
     with rasterio.open(file_path) as src:
         data = src.read(1)
         mean = np.mean(data)
@@ -11,11 +11,16 @@ def get_min_max_values(file_path):
         print(f"Minimum Value: {min_val}")
         print(f"Maximum Value: {max_val}")
         print(f"Mean Value: {mean}")
-
+        print(f"   Bands: {src.count}")
+        print(f"   Shape: {src.height} x {src.width}")
+        print(f"   Dtype: {src.dtypes[0]}")
         return min_val, max_val
+    
 
-# Replace with the path to your GeoTIFF file
-file_to_check = "/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/to_label_converted/S1A_IW_20210122T001130_DVP_RTC20_G_gpufed_5E3C_VV.tif_clipped_to_chamlangTshoAOI.geojson.tif"
-get_min_max_values(file_to_check)
+def finalCheck(check_directory):
+    for path in check_directory.glob("*.tif"):
+        check(path)
+
+
 
 

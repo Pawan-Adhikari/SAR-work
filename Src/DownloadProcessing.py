@@ -8,7 +8,8 @@ import Crop_Product as cp
 import subprocess
 import configparser
 import padding
-
+import Normalize
+import tifCheck
 
 #Initiation:
 config = configparser.ConfigParser()
@@ -93,18 +94,22 @@ for i in range (5):
             print(zipName)
             tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
 
-            with ZipFile(zipPath, 'r') as zObj:
-                print(zObj.namelist())
-                zObj.extract(tifName, path=loc)
-            zObj.close()
+            try:
+                with ZipFile(zipPath, 'r') as zObj:
+                    print(zObj.namelist())
+                    zObj.extract(tifName, path=loc)
+                zObj.close()
 
-            tifPath = Path(f'{loc}/{tifName}')
+                tifPath = Path(f'{loc}/{tifName}')
 
-            for lakeName in lakeNames:
-                lakePath = f'../Training_Dataset/{lakeName}'
-                crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-                padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{crop_out.name}')
+                for lakeName in lakeNames:
+                    lakePath = f'../Training_Dataset/{lakeName}'
+                    crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
+                    padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{crop_out.name}')
+            except:
+                print("Couldn't extract the zip: ", zipName)
 
-
+finalOut = Normalize.normalize()
+tifCheck.finalCheck(finalOut)
 
 
