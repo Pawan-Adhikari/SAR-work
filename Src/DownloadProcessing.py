@@ -23,6 +23,7 @@ loc=config.get('Other','store_location')
 lakeNames = config.get('Other', 'lakeNames').split(', ')
 years = config.get('Other', 'years').split(', ')
 job_name = config.get('Other','job_name')
+print(lakeNames)
 
 #hyp3 authentication
 hyp3 = hyp3_sdk.HyP3(username=usr, password=pas)
@@ -102,7 +103,7 @@ for i in range (5):
             for lakeName in lakeNames:
                 lakePath = f'../Training_Dataset/{lakeName}'
                 crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-                padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{tifPath.name}')
+                padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{crop_out.name}')
 
 
 

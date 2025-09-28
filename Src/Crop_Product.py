@@ -2,7 +2,7 @@ from osgeo import gdal, ogr
 from pathlib import Path
 
 def crop(input_tif, aoi_geojson, outDir):
-    output_tif_name = f"{Path(input_tif).name}_clipped_to_{Path(aoi_geojson).name}.tif"
+    output_tif_name = f"{Path(input_tif).stem}_clipped_to_{Path(aoi_geojson).stem}.tif"
     output_tif = Path(f"{outDir}/{output_tif_name}")
     # Warp options
     warp_options = gdal.WarpOptions(
