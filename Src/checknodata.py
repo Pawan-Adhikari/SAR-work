@@ -1,8 +1,7 @@
 import rasterio
 import numpy as np
 
-# Replace with the path to your image and mask
-mask_path = '/Users/pawanadhikari/Downloads/S1A_IW_20230925T121409_DVP_RTC20_G_gpufed_C3D9_VV.tif_clipped_to_chamlangTshoAOI.geojson.tif    '
+mask_path = '/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/Training_Dataset/new_labelled_my/S1A_IW_20210313T123031_DVP_RTC20_G_gpufed_0242_VV_clipped_to_tilichoTshoAOI.tif'
 
 
 # Open and read the labeled mask

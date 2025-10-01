@@ -1,6 +1,5 @@
 # initial setup
 import hyp3_sdk
-import re
 from pathlib import Path
 from zipfile import ZipFile
 import Crop_Product as cp
@@ -9,8 +8,8 @@ import configparser
 import padding
 import Normalize
 import tifCheck
+import os
 
-loc='../SAR_products_unprocessed/newBatch'
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -51,34 +50,27 @@ for path in Path(loc).glob("*.zip"):
 
 
 #Start matching and extracting and finally cropping. Matching uncesseary for year wise sampling.
-start_year = 2021
-for i in range (5):
-    year = start_year + i
-    pattern_string = r"S1A_IW_" + str(year) + r"\d+T\d+_DVP_RTC\d+_G_.*_.*\.zip"
-    pattern = re.compile(
-        pattern_string
-    )
-    print(pattern)
-    for zipPath in zipPaths:
-        zipName = zipPath.name
-        if pattern.match(zipName):
-            print(zipName)
-            tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
+for zipPath in zipPaths:
+    zipName = zipPath.name
+    print(zipName)
+    tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
 
-            try:
-                with ZipFile(zipPath, 'r') as zObj:
-                    print(zObj.namelist())
-                    zObj.extract(tifName, path=loc)
-                zObj.close()
+    try:
+        with ZipFile(zipPath, 'r') as zObj:
+            print(zObj.namelist())
+            zObj.extract(tifName, path=loc)
+        zObj.close()
 
-                tifPath = Path(f'{loc}/{tifName}')
+        tifPath = Path(f'{loc}/{tifName}')
 
-                for lakeName in lakeNames:
-                    lakePath = f'../Training_Dataset/{lakeName}'
-                    crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-                    padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{crop_out.name}')
-            except:
-                print("Cannot extract: ",zipName)
+        for lakeName in lakeNames:
+            lakePath = f'../Training_Dataset/{lakeName}'
+            crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
+            padded_out = lakePath + f'/Padded/{crop_out.name}'
+            padding.pad_and_save_tif(crop_out, padded_out)
+            os.system(f"cp {padded_out} /Users/pawanadhikari/Documents/Roadmap/Projects/SAR/to_model/before_norm")
+    except:
+        print("Cannot extract: ",zipName)
 
 
 finalOut = Normalize.normalize()

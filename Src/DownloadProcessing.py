@@ -1,7 +1,6 @@
 # Imports and libraries
 import asf_search as asf
 import hyp3_sdk
-import re
 from pathlib import Path
 from zipfile import ZipFile
 import Crop_Product as cp
@@ -10,6 +9,7 @@ import configparser
 import padding
 import Normalize
 import tifCheck
+import os
 
 #Initiation:
 config = configparser.ConfigParser()
@@ -18,7 +18,7 @@ start_date=config.get('Other','start_date')
 end_date=config.get('Other','end_date')    
 usr = config.get('Login','user')
 pas = config.get('Login','password')
-wkt = config.get('Other','wkt')     
+wkt = config.get('Other','wkt')
 n = config.getint('Other','number_of_products_per_month')    
 loc=config.get('Other','store_location')
 lakeNames = config.get('Other', 'lakeNames').split(', ')
@@ -30,6 +30,7 @@ print(lakeNames)
 hyp3 = hyp3_sdk.HyP3(username=usr, password=pas)
 
 #Searching:
+
 results = []
 for year in years:
     results_thisYear = asf.geo_search(intersectsWith=wkt,
@@ -37,7 +38,12 @@ for year in years:
                             processingLevel=[asf.PRODUCT_TYPE.GRD_HD,asf.PRODUCT_TYPE.GRD_HS, asf.PRODUCT_TYPE.GRD_MD, asf.PRODUCT_TYPE.GRD_MS, asf.PRODUCT_TYPE.GRD_FD],
                             start=year + '-' + start_date,
                             end=year + '-' + end_date)
-    results.append(results_thisYear[n])
+    try: 
+        results.append(results_thisYear[n])
+    except IndexError:
+        print(f"Didn't file product for year {year}.")
+
+
 
 granule_ids = [result.properties['sceneName'] for result in results]
 
@@ -80,34 +86,37 @@ for path in Path(loc).glob("*.zip"):
 
 
 #Start matching and extracting and finally cropping. Matching uncesseary for year wise sampling.
-start_year = 2021
+"""start_year = 2021
 for i in range (5):
     year = start_year + i
     pattern_string = r"S1A_IW_" + str(year) + r"\d+T\d+_DVP_RTC\d+_G_.*_.*\.zip"
     pattern = re.compile(
         pattern_string
     )
-    print(pattern)
-    for zipPath in zipPaths:
-        zipName = zipPath.name
-        if pattern.match(zipName):
-            print(zipName)
-            tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
+    print(pattern)"""
 
-            try:
-                with ZipFile(zipPath, 'r') as zObj:
-                    print(zObj.namelist())
-                    zObj.extract(tifName, path=loc)
-                zObj.close()
+for zipPath in zipPaths:
+    zipName = zipPath.name
+    #if pattern.match(zipName):
+    print(zipName)
+    tifName = zipName.replace(".zip","")+'/'+zipName.replace(".zip","_VV.tif")
 
-                tifPath = Path(f'{loc}/{tifName}')
+    try:
+        with ZipFile(zipPath, 'r') as zObj:
+            print(zObj.namelist())
+            zObj.extract(tifName, path=loc)
+        zObj.close()
 
-                for lakeName in lakeNames:
-                    lakePath = f'../Training_Dataset/{lakeName}'
-                    crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
-                    padding.pad_and_save_tif(crop_out,lakePath + f'/Padded/{crop_out.name}')
-            except:
-                print("Couldn't extract the zip: ", zipName)
+        tifPath = Path(f'{loc}/{tifName}')
+
+        for lakeName in lakeNames:
+            lakePath = f'../Training_Dataset/{lakeName}'
+            crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
+            padded_out = lakePath + f'/Padded/{crop_out.name}'
+            padding.pad_and_save_tif(crop_out, padded_out)
+            os.system(f"cp {padded_out} /Users/pawanadhikari/Documents/Roadmap/Projects/SAR/to_model/before_norm")
+    except:
+        print("Couldn't extract the zip: ", zipName)
 
 finalOut = Normalize.normalize()
 tifCheck.finalCheck(finalOut)
