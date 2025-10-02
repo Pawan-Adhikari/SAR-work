@@ -70,8 +70,8 @@ def normalize_and_save_geotiff_hist_equalization(input_path, output_path):
         print(f"❌ An unexpected error occurred: {e}")
 
 
-def normalize(input_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/to_model/before_norm'),
-              output_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/to_model/after_norm')):
+def normalize(input_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/For_website/Normalization/before_norm'),
+              output_directory = Path('/Users/pawanadhikari/Documents/Roadmap/Projects/SAR/For_website/Normalization/after_norm')):
 
     output_directory.mkdir(exist_ok=True)
     for path in input_directory.glob("*.tif"):

@@ -22,6 +22,8 @@ n = config.getint('Other','number_of_products_per_month')
 loc=config.get('Other','store_location')
 lakeNames = config.get('Other', 'lakeNames').split(', ')
 years = config.get('Other', 'years').split(', ')
+before_norm = config.get('Other','before_norm')
+after_norm = config.get('Other','after_norm')
 job_name = config.get('Other','job_name')
 
 # Authenticate using environment variables
@@ -73,5 +75,5 @@ for zipPath in zipPaths:
         print("Cannot extract: ",zipName)
 
 
-finalOut = Normalize.normalize()
+finalOut = Normalize.normalize(before_norm, after_norm)
 tifCheck.finalCheck(finalOut)

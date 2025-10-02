@@ -24,6 +24,8 @@ loc=config.get('Other','store_location')
 lakeNames = config.get('Other', 'lakeNames').split(', ')
 years = config.get('Other', 'years').split(', ')
 job_name = config.get('Other','job_name')
+before_norm = config.get('Other','before_norm')
+after_norm = config.get('Other','after_norm')
 print(lakeNames)
 
 #hyp3 authentication
@@ -114,11 +116,11 @@ for zipPath in zipPaths:
             crop_out=cp.crop(tifPath,f'{lakePath}/{lakeName}AOI.geojson', lakePath)
             padded_out = lakePath + f'/Padded/{crop_out.name}'
             padding.pad_and_save_tif(crop_out, padded_out)
-            os.system(f"cp {padded_out} /Users/pawanadhikari/Documents/Roadmap/Projects/SAR/to_model/before_norm")
+            os.system(f"cp {padded_out} {before_norm}")
     except:
         print("Couldn't extract the zip: ", zipName)
 
-finalOut = Normalize.normalize()
+finalOut = Normalize.normalize(before_norm,after_norm)
 tifCheck.finalCheck(finalOut)
 
 
